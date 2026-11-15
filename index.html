@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moodify</title>
+<style>
+body {
+  margin:0;
+  padding:30px 18px;
+  background:#100d20;
+  color:white;
+  font-family:Arial,sans-serif;
+  text-align:center;
+}
+h1 {font-size:42px;color:#c5a5ff}
+.card {
+  max-width:450px;
+  margin:25px auto;
+  padding:24px;
+  background:#211b38;
+  border-radius:22px;
+}
+button {
+  background:#9365e9;
+  color:white;
+  border:0;
+  border-radius:12px;
+  padding:12px 18px;
+  margin:6px;
+  cursor:pointer;
+}
+input {max-width:100%;margin:15px}
+audio {width:100%;margin-top:20px}
+#songs {text-align:left;overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<h1>🎧 Moodify</h1>
+<p>Your mood, your music.</p>
+
+<div class="card">
+  <h2>💜 Choose Your Mood</h2>
+  <button onclick="mood('행복')">😊 행복</button>
+  <button onclick="mood('슬픔')">🌧️ 슬픔</button>
+  <button onclick="mood('피곤')">😴 피곤</button>
+  <button onclick="mood('신남')">⚡ 신남</button>
+  <p id="message">오늘 기분은 어때?</p>
+</div>
+
+<div class="card">
+  <h2>🎵 My Music</h2>
+  <p>음악 파일을 추가해 줘!</p>
+  <input id="files" type="file" accept="audio/*" multiple>
+  <div id="songs"></div>
+  <audio id="player" controls></audio>
+  <p id="now">재생할 노래를 선택해 줘.</p>
+  <button onclick="previous()">⏮ 이전 곡</button>
+  <button onclick="next()">다음 곡 ⏭</button>
+</div>
+
+<script>
+let tracks = [];
+let current = 0;
+const player = document.getElementById("player");
+
+document.getElementById("files").addEventListener("change", e => {
+  tracks.forEach(t => URL.revokeObjectURL(t.url));
+  tracks = Array.from(e.target.files).map(file => ({
+    name:file.name,
+    url:URL.createObjectURL(file)
+  }));
+  current = 0;
+  showSongs();
+  if(tracks.length) play(0);
+});
+
+function showSongs() {
+  document.getElementById("songs").innerHTML = "";
+  tracks.forEach((track,i) => {
+    const b = document.createElement("button");
+    b.textContent = "▶ " + track.name;
+    b.onclick = () => play(i);
+    document.getElementById("songs").appendChild(b);
+  });
+}
+
+function play(i) {
+  if(!tracks.length) return;
+  current = (i + tracks.length) % tracks.length;
+  player.src = tracks[current].url;
+  player.play();
+  document.getElementById("now").textContent =
+    "🎶 재생 중: " + tracks[current].name;
+}
+
+function next() { if(tracks.length) play(current+1); }
+function previous() { if(tracks.length) play(current-1); }
+
+player.addEventListener("ended", next);
+
+function mood(value) {
+  document.getElementById("message").textContent =
+    value + " 기분이구나! 음악을 골라 들어봐 💜";
+}
+</script>
+</body>
+</html>
